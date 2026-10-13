@@ -9,9 +9,9 @@
 
 本 repo 的維護者負責這個擴充功能；公會職稱與自填 GitHub slug 不授予寫入權。
 
-程式入口：[src/](src/)、[scripts/build.mjs](scripts/build.mjs)、[test/](test/)、[docs/architecture.md](docs/architecture.md)。協作先讀 [CONTRIBUTING.md](CONTRIBUTING.md)，讓 Agent 讀 [AGENTS.md](AGENTS.md)；從[本倉 Issues](https://github.com/FreeTWAI-AI/freedom-browser-extension/issues)認領、[查看既有 PR](https://github.com/FreeTWAI-AI/freedom-browser-extension/pulls)避免重工。
+程式入口：[src/](src/)、[scripts/build.mjs](scripts/build.mjs)、[test/](test/)、[docs/architecture.md](docs/architecture.md)。協作先讀 [CONTRIBUTING.md](CONTRIBUTING.md)，讓 Agent 讀 [AGENTS.md](AGENTS.md)；從[本倉 Issues](https://github.com/FreeTWAI/freedom-browser-extension/issues)認領、[查看既有 PR](https://github.com/FreeTWAI/freedom-browser-extension/pulls)避免重工。
 
-從模板建立的 repo 不等於 GitHub fork，不繼承原 repo ID。中央會員與公會仍經 freedom-platform API，不複製中央資料庫。跨 repo 的協定由[中央平台](https://github.com/FreeTWAI-AI/freedom-platform)維護。
+從模板建立的 repo 不等於 GitHub fork，不繼承原 repo ID。中央會員與公會仍經 freedom-platform API，不複製中央資料庫。跨 repo 的協定由[中央平台](https://github.com/FreeTWAI/freedom-platform)維護。
 <!-- freedom-repository-guide:end -->
 
 A Manifest V3 Chrome extension that pairs a browser to Freedom Workshop. Access and refresh tokens stay in `chrome.storage.session`. The device key is a nonextractable P-256 key in IndexedDB. The extension does not store provider keys, customer data, or payment data.

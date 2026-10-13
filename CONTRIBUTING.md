@@ -1,10 +1,10 @@
 # 一起把專案做好
 
-任務與進度以本 repo 的 [GitHub Issues](https://github.com/FreeTWAI-AI/freedom-browser-extension/issues) 為準；程式修改與審查以 PR 為準。自由工坊的共創頁協助大家找到專案、角色和任務入口，repo 權限仍由維護者管理。
+任務與進度以本 repo 的 [GitHub Issues](https://github.com/FreeTWAI/freedom-browser-extension/issues) 為準；程式修改與審查以 PR 為準。自由工坊的共創頁協助大家找到專案、角色和任務入口，repo 權限仍由維護者管理。
 
 ## 從一張明確的 Issue 開始
 
-在 [任務表單](https://github.com/FreeTWAI-AI/freedom-browser-extension/issues/new?template=task.yml) 說清楚：誰遇到什麼問題、這輪範圍、完成條件、怎麼驗證、需要哪些角色，以及依賴的資料或其他任務。
+在 [任務表單](https://github.com/FreeTWAI/freedom-browser-extension/issues/new?template=task.yml) 說清楚：誰遇到什麼問題、這輪範圍、完成條件、怎麼驗證、需要哪些角色，以及依賴的資料或其他任務。
 
 認領前，先讀 Issue 的最新討論與 [AGENTS.md](AGENTS.md)。在 Issue 留言說明你想處理的範圍、預計交付、需要的協助和可投入時間，等維護者確認後再視為已分派。維護者已直接授權的工作沿用該授權，並把範圍連回 Issue，避免其他人重複實作。
 
