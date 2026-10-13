@@ -1,6 +1,6 @@
 # 任務入口
 
-[查看目前 GitHub Issues](https://github.com/FreeTWAI-AI/freedom-browser-extension/issues) · [提出新任務](https://github.com/FreeTWAI-AI/freedom-browser-extension/issues/new?template=task.yml) · [查看 Pull Requests](https://github.com/FreeTWAI-AI/freedom-browser-extension/pulls)
+[查看目前 GitHub Issues](https://github.com/FreeTWAI/freedom-browser-extension/issues) · [提出新任務](https://github.com/FreeTWAI/freedom-browser-extension/issues/new?template=task.yml) · [查看 Pull Requests](https://github.com/FreeTWAI/freedom-browser-extension/pulls)
 
 GitHub Issues 是本專案唯一的任務清單，PR 是修改與審查紀錄。這個檔案只提供入口，不鏡像任務狀態、不預填不存在的待辦，也不把自由工坊的協調紀錄視為 repo 分派權限。
 
