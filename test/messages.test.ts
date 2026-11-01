@@ -127,3 +127,47 @@ test('EXT-09 rejects JSON that carries JS, eval, or a remote handler', async () 
   assert.equal(calls.native, 0);
   assert.equal(calls.hello, 0);
 });
+
+test('EXT-09 rejects deep objects, arrays, prototypes, and prototype pollution keys', async () => {
+  const { router } = buildRouter();
+
+  const nested = await router.handle({ type: 'pairing.begin', epoch: 3, deeply: { nested: { nested: { nested: { nested: { nested: { nested: { nested: { nested: { tooDeep: true } } } } } } } } } }, page());
+  assert.equal(nested.error, 'schema', 'nested objects deeper than 8 levels should be rejected');
+
+  const array = await router.handle([{ type: 'pairing.begin', epoch: 3 }], page());
+  assert.equal(array.error, 'schema', 'arrays should be rejected');
+
+  const protoObject = Object.create({ inherited: true });
+  protoObject.type = 'pairing.begin';
+  protoObject.epoch = 3;
+  const proto = await router.handle(protoObject, page());
+  assert.equal(proto.error, 'schema', 'objects with prototype should be rejected');
+
+  const pollution = await router.handle({ type: 'pairing.begin', epoch: 3, __proto__: { evil: true } }, page());
+  assert.equal(pollution.error, 'schema', 'prototype pollution key __proto__ should be rejected');
+
+  const constructorPollution = await router.handle({ type: 'pairing.begin', epoch: 3, constructor: { name: 'Function' } }, page());
+  assert.equal(constructorPollution.error, 'schema', 'prototype pollution key constructor should be rejected');
+});
+
+test('EXT-09 rejects platform origin, forbidden string contents, and malformed origins', async () => {
+  const { router } = buildRouter();
+
+  const scriptString = await router.handle({ type: 'pairing.begin', epoch: 3, note: '<script src="evil"></script>' }, page());
+  assert.equal(scriptString.error, 'schema', 'strings containing <script should be rejected');
+
+  const importString = await router.handle({ type: 'pairing.begin', epoch: 3, note: 'import("evil")' }, page());
+  assert.equal(importString.error, 'schema', 'strings containing import() should be rejected');
+
+  const javascriptString = await router.handle({ type: 'pairing.begin', epoch: 3, note: 'javascript:alert(1)' }, page());
+  assert.equal(javascriptString.error, 'schema', 'strings containing javascript: should be rejected');
+
+  const httpsString = await router.handle({ type: 'pairing.begin', epoch: 3, note: 'https://evil.example' }, page());
+  assert.equal(httpsString.error, 'schema', 'strings containing https:// should be rejected');
+
+  const platformOriginMatch = await router.handle({ type: 'site.start', epoch: 3, tabId: 1, origin: stagingProfile.origin }, page());
+  assert.equal(platformOriginMatch.error, 'schema', 'origin matching platform origin should be rejected');
+
+  const malformedOrigin = await router.handle({ type: 'site.start', epoch: 3, tabId: 1, origin: 'https://evil.example?query=1' }, page());
+  assert.equal(malformedOrigin.error, 'schema', 'origins with query parameters should be rejected');
+});
