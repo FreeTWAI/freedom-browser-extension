@@ -14,6 +14,10 @@ export interface MessageSender {
   tab?: { id?: number; url?: string } | undefined;
 }
 
+
+/**
+ * Result of attempting to route and handle a message.
+ */
 export interface RouteResult {
   ok: boolean;
   error?: string;
@@ -61,6 +65,10 @@ const keySets: Record<string, string[]> = {
   'site.ping': ['epoch', 'type'],
 };
 
+
+/**
+ * Dependencies and handlers required by the message Router.
+ */
 export interface RouterDeps {
   runtimeId: string;
   platformOrigin: string;
@@ -124,6 +132,10 @@ export function classifySender(sender: MessageSender, runtimeId: string): 'exten
   return 'rejected';
 }
 
+
+/**
+ * Creates a message router that validates schema, sender origin, and expected epoch before dispatching to handlers.
+ */
 export function createRouter(deps: RouterDeps) {
   return {
     async handle(message: unknown, sender: MessageSender): Promise<RouteResult> {

@@ -53,3 +53,89 @@ It does not run models, act on page DOM, ship a Native Host, or publish a store 
 ## Identity
 
 This repository was created from `FreeTWAI-AI/freedom-project-template` at `9bc7cee3f98d21da3156e5a67bfa63dc63a4615e`. It is not a fork. The initialization checklist is [docs/initialize-project.md](docs/initialize-project.md). `freedom.project.yaml` is this extension's manifest. Do not point issues or pull requests at the template repository.
+
+## Developer Usage
+
+The background service worker uses the `PairingClient`, `Router`, and `SessionStore` to manage pairing state and route messages between extension pages, content scripts, and the platform.
+
+### SessionStore
+
+The `SessionStore` saves pairing tokens in Chrome's session storage, ensuring they are cleared when the browser is closed. It refuses to write tokens to `local` or `sync` storage to maintain the trust boundary.
+
+```typescript
+import { createChromeSessionStore } from './session-store.ts';
+
+const store = createChromeSessionStore(chrome.storage.session);
+```
+
+### PairingClient
+
+The `PairingClient` implements the device authorization flow. It manages the `device_code` lifecycle, performs cryptographic DPoP signing via `DeviceKeyStore`, and handles token refresh.
+
+```typescript
+import { createPairingClient } from './pairing-client.ts';
+import { createChromeSessionStore } from './session-store.ts';
+import { createIndexedDbKeyStore } from './device-key.ts';
+import { profiles } from './profile.ts';
+
+// Obtain dependencies
+const profile = profiles['staging'];
+const store = createChromeSessionStore(chrome.storage.session);
+const keys = createIndexedDbKeyStore();
+
+// Initialize the client
+const pairing = await createPairingClient({
+  profile,
+  fetchImpl: globalThis.fetch.bind(globalThis),
+  clock: Date,
+  keys,
+  store
+});
+
+// Start a pairing session
+const view = await pairing.begin();
+console.log(view.userCode, view.verificationUri);
+```
+
+### Router
+
+The `Router` validates incoming `chrome.runtime` messages, rejecting unrecognized commands and malformed JSON schemas.
+
+```typescript
+import { createRouter } from './messages.ts';
+
+const router = createRouter({
+  runtimeId: chrome.runtime.id,
+  platformOrigin: 'https://staging.freetwai.com',
+  pairingEpoch: () => pairing.view().epoch,
+  snapshot: async () => buildSnapshot(),
+  // ... implement required methods for other actions ...
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  router.handle(message, sender).then(sendResponse);
+  return true; // Keep channel open for async response
+});
+```
+
+## API Reference
+
+### PairingClient
+
+*   `begin()`: Starts device authorization and returns the user code and verification URI.
+*   `poll()`: Polls the token endpoint while in the `waiting` phase.
+*   `refresh()`: Rotates the access token using the refresh handle.
+*   `readStatus()`: Validates the current connection and nonce against the platform.
+*   `disconnect()`: Wipes local tokens and session state.
+*   `view()`: Returns the synchronous `PublicView` of the pairing state.
+*   `verificationUri()`: Returns the URI the user should visit, if waiting.
+
+### SessionStore
+
+*   `read()`: Reads the persisted pairing from storage. Returns `null` if empty.
+*   `write(value)`: Writes a pairing record to storage. Throws if the underlying storage area is not session-bound and tokens are present.
+*   `clear()`: Wipes the storage area.
+
+### Router
+
+*   `handle(message, sender)`: Validates the `message` structure and origin before dispatching to the configured `RouterDeps`. Returns a `RouteResult` with either success `snapshot` or `error` details.

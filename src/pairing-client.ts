@@ -22,14 +22,26 @@ import type { SessionStore } from './session-store.ts';
 
 export type PublicPhase = 'disconnected' | 'waiting' | 'connected' | 'revoked' | 'expired' | 'reconnect';
 
+/**
+ * A safe subset of pairing state presented to the extension UI.
+ * Does not contain tokens or private keys.
+ */
 export interface PublicView {
+  /** The current high-level state of the pairing flow. */
   phase: PublicPhase;
+  /** Explains why the pairing is in the current phase (e.g., error codes). */
   reason: string | null;
+  /** The short code the user types at the verification URI. */
   userCode: string | null;
+  /** The URL where the user enters the userCode. */
   verificationUri: string | null;
+  /** When the current token or pending authorization expires. */
   expiresAt: string | null;
+  /** The platform connection UUID, if connected. */
   connectionId: string | null;
+  /** A counter that increments on state transitions. Used to reject stale messages. */
   epoch: number;
+  /** How long the UI should wait before polling again, in milliseconds. */
   pollAfterMs: number;
 }
 
@@ -37,14 +49,44 @@ export interface Clock {
   now(): number;
 }
 
+/**
+ * Manages the device authorization flow, token refresh, and status checks.
+ * Modifies local session state and interacts with the platform.
+ */
 export interface PairingClient {
+  /**
+   * Starts device authorization, generating a new device key and retrieving the user code.
+   * @throws {ProtocolError} If already started.
+   */
   begin(): Promise<PublicView>;
+  /**
+   * Polls the platform for the access token while waiting for the user to confirm.
+   * Modifies state based on the platform response (issued, slow_down, expired, etc.).
+   */
   poll(): Promise<PublicView>;
+  /**
+   * Rotates the access token using the current refresh handle.
+   */
   refresh(): Promise<PublicView>;
+  /**
+   * Checks the active connection status against the platform using a nonce.
+   */
   readStatus(): Promise<PublicView>;
+  /**
+   * Clears the pairing state and wipes tokens and keys.
+   */
   disconnect(): Promise<PublicView>;
+  /**
+   * Synchronously returns the current pairing state.
+   */
   view(): PublicView;
+  /**
+   * Returns the verification URI if in the waiting phase, otherwise null.
+   */
   verificationUri(): string | null;
+  /**
+   * Returns true if enough time has passed to warrant another status check.
+   */
   shouldRecheck(intervalMs: number): boolean;
 }
 
@@ -72,6 +114,17 @@ function publicPhase(phase: PersistedPairing['phase']): PublicPhase {
   return phase;
 }
 
+
+/**
+ * Creates and initializes a PairingClient.
+ * Reads existing session state on startup and quarantines it if uncertain.
+ *
+ * @param options.profile The build profile containing platform URLs.
+ * @param options.fetchImpl The fetch implementation to use.
+ * @param options.clock An interface providing the current time.
+ * @param options.keys The store for the device's P-256 key pair.
+ * @param options.store The session storage for tokens.
+ */
 export async function createPairingClient(options: {
   profile: BuildProfile;
   fetchImpl: typeof fetch;

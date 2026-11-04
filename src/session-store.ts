@@ -2,6 +2,10 @@ import type { PersistedPairing } from './pairing-state.ts';
 
 const KEY = 'freedom.pairing';
 
+
+/**
+ * Interface for persisting pairing tokens securely.
+ */
 export interface SessionStore {
   read(): Promise<PersistedPairing | null>;
   write(value: PersistedPairing): Promise<void>;
@@ -23,6 +27,11 @@ interface StorageArea {
   remove: (keys: string | string[]) => Promise<void>;
 }
 
+
+/**
+ * Creates a SessionStore using Chrome's extension storage API.
+ * The underlying `area` must be `chrome.storage.session` to protect tokens.
+ */
 export function createChromeSessionStore(area: StorageArea): SessionStore {
   return {
     async read() {
